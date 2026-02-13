@@ -1,0 +1,15 @@
+# Environnement virtuel
+venv/
+
+# Fichiers audio temporaires
+data/
+
+# Modèles lourds
+models/
+
+# Fichiers Python compilés
+__pycache__/
+*.pyc
+
+# Fichiers système Windows
+Thumbs.db
