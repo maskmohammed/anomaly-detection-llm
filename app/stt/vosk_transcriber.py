@@ -11,9 +11,9 @@ class VoskTranscriber:
         if not os.path.exists(MODEL_PATH):
             raise Exception("Modèle Vosk introuvable")
         
-        print("🔄 Chargement du modèle Vosk...")
+        print("Chargement du modèle Vosk...")
         self.model = Model(MODEL_PATH)
-        print("✅ Modèle chargé")
+        print("Modèle chargé")
 
     def transcribe(self, audio_path):
         wf = wave.open(audio_path, "rb")

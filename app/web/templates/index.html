@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Détection d'Anomalies</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #111;
+            color: #eee;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #00ff88;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: #1c1c1c;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .normal {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .urgent {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        .critique {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .big-label {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .score {
+            font-size: 22px;
+            margin-top: 10px;
+        }
+
+        .justification {
+            margin-top: 10px;
+            color: #ccc;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #1c1c1c;
+        }
+
+        th, td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #222;
+            color: #00ff88;
+        }
+
+        tr:nth-child(even) {
+            background-color: #181818;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dashboard - Détection d'Anomalies</h1>
+
+    <form method="get">
+        <button type="submit" style="
+            background-color: #00ff88;
+            color: black;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 20px;
+        ">
+            Actualiser
+        </button>
+    </form>
+
+    {% if latest_log %}
+    <div class="card">
+        <h2>Dernier résultat</h2>
+        <p><strong>Texte :</strong> {{ latest_log[2] }}</p>
+
+        <p class="big-label
+            {% if latest_log[6] == 'NORMAL' %}normal
+            {% elif latest_log[6] == 'URGENT' %}urgent
+            {% else %}critique
+            {% endif %}
+        ">
+            {{ latest_log[6] }}
+        </p>
+
+        <p class="score"><strong>Score final :</strong> {{ latest_log[5] }}</p>
+        <p><strong>Score TM :</strong> {{ latest_log[3] }}</p>
+        <p><strong>Score LLM :</strong> {{ latest_log[4] }}</p>
+        <p class="justification"><strong>Justification :</strong> {{ latest_log[7] }}</p>
+    </div>
+    {% endif %}
+
+    <!-- <div class="card">
+        <h2>Évolution des scores</h2>
+        <canvas id="scoreChart"></canvas>
+    </div> -->
+
+    <div class="card">
+        <h2>Historique des dernières analyses</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Transcript</th>
+                    <th>Score TM</th>
+                    <th>Score LLM</th>
+                    <th>Score Final</th>
+                    <th>Label</th>
+                    <th>Justification</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log[0] }}</td>
+                    <td>{{ log[1] }}</td>
+                    <td>{{ log[2] }}</td>
+                    <td>{{ log[3] }}</td>
+                    <td>{{ log[4] }}</td>
+                    <td>{{ log[5] }}</td>
+                    <td class="
+                        {% if log[6] == 'NORMAL' %}normal
+                        {% elif log[6] == 'URGENT' %}urgent
+                        {% else %}critique
+                        {% endif %}
+                    ">
+                        {{ log[6] }}
+                    </td>
+                    <td>{{ log[7] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+    <!-- <script>
+        const ctx = document.getElementById('scoreChart');
+    
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ labels | safe }},
+                datasets: [{
+                    label: 'Score Final',
+                    data: {{ scores | safe }},
+                    borderWidth: 2,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    </script> -->
+</body>
+</html>

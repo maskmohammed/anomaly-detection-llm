@@ -2,11 +2,11 @@ import sounddevice as sd
 from scipy.io.wavfile import write
 import os
 
-SAMPLE_RATE = 16000  # Compatible avec Vosk
-DURATION = 5         # secondes
+SAMPLE_RATE = 16000  
+DURATION = 5         
 
 def record_audio(output_path="data/test.wav"):
-    print("🎙️ Enregistrement en cours...")
+    print("Enregistrement en cours...")
 
     os.makedirs("data", exist_ok=True)
 
@@ -21,4 +21,4 @@ def record_audio(output_path="data/test.wav"):
 
     write(output_path, SAMPLE_RATE, recording)
 
-    print(f"✅ Audio sauvegardé dans {output_path}")
+    print(f"Audio sauvegardé dans {output_path}")
