@@ -1,189 +1,1086 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Détection d'Anomalies</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Système de surveillance des communications</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #111;
-            color: #eee;
-            padding: 20px;
+        :root{
+            --bg:#060806;
+            --panel:#0b0e0b;
+            --panel-2:#0e120d;
+            --line:#2b3824;
+            --line-soft:#1a2417;
+            --text:#d8efaa;
+            --muted:#9db37b;
+            --green:#73ff5e;
+            --green-2:#4fe05f;
+            --red:#ff5b47;
+            --red-2:#ff7c62;
+            --orange:#ff9b63;
+            --shadow-green:0 0 18px rgba(115,255,94,.18);
+            --shadow-red:0 0 18px rgba(255,91,71,.18);
         }
 
-        h1 {
-            color: #00ff88;
-            margin-bottom: 10px;
+        *{box-sizing:border-box}
+
+        body{
+            margin:0;
+            min-height:100vh;
+            background:
+                radial-gradient(circle at top left, rgba(120,255,80,.06), transparent 20%),
+                radial-gradient(circle at bottom right, rgba(255,80,60,.05), transparent 22%),
+                var(--bg);
+            color:var(--text);
+            font-family: "Consolas", "Courier New", monospace;
+            padding:18px;
         }
 
-        .card {
-            background: #1c1c1c;
-            border: 1px solid #333;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
+        .frame{
+            max-width:1500px;
+            margin:0 auto;
+            background:linear-gradient(180deg,#0a0d09,#090b08);
+            border:1px solid #49563a;
+            border-radius:28px;
+            overflow:hidden;
+            box-shadow:
+                0 0 0 1px rgba(120,160,80,.14),
+                0 0 42px rgba(92,140,43,.12);
         }
 
-        .normal {
-            color: #4caf50;
-            font-weight: bold;
+        .header{
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:20px;
+            padding:18px 22px;
+            border-bottom:1px solid var(--line);
         }
 
-        .urgent {
-            color: #ff9800;
-            font-weight: bold;
+        .header-left{
+            display:flex;
+            gap:14px;
+            align-items:flex-start;
         }
 
-        .critique {
-            color: #f44336;
-            font-weight: bold;
+        .logo{
+            width:44px;
+            height:44px;
+            border-radius:50%;
+            border:1px solid #3a5631;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:var(--green);
+            box-shadow:var(--shadow-green);
+            font-size:20px;
+            flex-shrink:0;
         }
 
-        .big-label {
-            font-size: 28px;
-            font-weight: bold;
+        .title{
+            margin:0;
+            font-size:28px;
+            text-transform:uppercase;
+            letter-spacing:.08em;
+            color:var(--green);
         }
 
-        .score {
-            font-size: 22px;
-            margin-top: 10px;
+        .subtitle{
+            margin-top:6px;
+            color:#bfd294;
+            font-size:13px;
+            text-transform:uppercase;
+            letter-spacing:.22em;
         }
 
-        .justification {
-            margin-top: 10px;
-            color: #ccc;
+        .system-box{
+            min-width:270px;
+            background:#111610;
+            border:1px solid #39452c;
+            border-radius:18px;
+            padding:14px 16px;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: #1c1c1c;
+        .system-line{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+            text-transform:uppercase;
+            font-size:13px;
+            letter-spacing:.12em;
         }
 
-        th, td {
-            border: 1px solid #333;
-            padding: 10px;
-            text-align: left;
+        .system-ok{
+            color:var(--green);
+            font-weight:700;
         }
 
-        th {
-            background-color: #222;
-            color: #00ff88;
+        .system-meta{
+            margin-top:10px;
+            display:flex;
+            justify-content:space-between;
+            color:var(--muted);
+            font-size:11px;
+            text-transform:uppercase;
+            letter-spacing:.18em;
         }
 
-        tr:nth-child(even) {
-            background-color: #181818;
+        .content{
+            display:grid;
+            grid-template-columns: 1.6fr .9fr;
+            gap:14px;
+            padding:14px;
+        }
+
+        .col{
+            display:flex;
+            flex-direction:column;
+            gap:14px;
+        }
+
+        .panel{
+            background:linear-gradient(180deg,#0d120d,#090b08);
+            border:1px solid #36422b;
+            border-radius:22px;
+            padding:16px;
+            box-shadow: inset 0 0 0 1px rgba(120,150,80,.04);
+        }
+
+        .panel-title{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            margin-bottom:14px;
+            font-size:14px;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:.18em;
+            color:#dff1ac;
+        }
+
+        .panel-icon{
+            width:36px;
+            height:36px;
+            border-radius:10px;
+            border:1px solid #33452a;
+            background:#101611;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .comm-grid{
+            display:grid;
+            grid-template-columns: 1.5fr 280px;
+            gap:14px;
+        }
+
+        .record-label{
+            color:var(--red-2);
+            font-size:11px;
+            text-transform:uppercase;
+            letter-spacing:.18em;
+            margin-bottom:8px;
+        }
+
+        .wave-box{
+            border:1px solid #22301f;
+            background:#0a0f0a;
+            border-radius:14px;
+            padding:14px 10px;
+            height:96px;
+            display:flex;
+            align-items:center;
+            gap:4px;
+            overflow:hidden;
+        }
+
+        .bar{
+            width:5px;
+            border-radius:99px;
+            background:linear-gradient(180deg,var(--green),#52d35d);
+            box-shadow:0 0 10px rgba(102,255,97,.28);
+            flex-shrink:0;
+            transition:height .08s linear, opacity .08s linear;
+        }
+
+        .transcription-box{
+            margin-top:14px;
+            border:1px solid var(--line);
+            background:#090c08;
+            border-radius:14px;
+            padding:14px;
+        }
+
+        .small-title{
+            font-size:13px;
+            color:#d5eba1;
+            text-transform:uppercase;
+            letter-spacing:.12em;
+            margin-bottom:10px;
+        }
+
+        .transcription-text{
+            font-size:15px;
+            line-height:1.8;
+            color:#eef9ca;
+        }
+
+        .tags{
+            margin-top:12px;
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+        }
+
+        .tag{
+            border:1px solid #6d2a20;
+            background:#2a120e;
+            color:#ff7f69;
+            border-radius:8px;
+            padding:6px 10px;
+            font-size:11px;
+            text-transform:uppercase;
+            letter-spacing:.12em;
+        }
+
+        .ptt-box{
+            min-height:285px;
+            border:1px solid var(--line);
+            background:#0b100b;
+            border-radius:18px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            gap:16px;
+            padding:16px;
+        }
+
+        .ptt-title{
+            font-size:13px;
+            text-transform:uppercase;
+            letter-spacing:.18em;
+            color:#e7f6b2;
+        }
+
+        .ptt-button{
+            background: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .ptt-button:disabled{
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .ptt-button:active .mic-ring{
+            transform: scale(0.97);
+        }
+
+        .mic-ring{
+            width:140px;
+            height:140px;
+            border-radius:50%;
+            border:1px solid #3c5d31;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:radial-gradient(circle, rgba(84,255,111,.20), rgba(0,0,0,.08) 55%, transparent 70%);
+            box-shadow:0 0 30px rgba(93,255,100,.18);
+            position:relative;
+            transition: transform .15s ease, box-shadow .2s ease;
+        }
+
+        .mic-ring::before{
+            content:"";
+            position:absolute;
+            inset:10px;
+            border-radius:50%;
+            border:1px solid #498338;
+        }
+
+        .mic-ring::after{
+            content:"";
+            position:absolute;
+            inset:24px;
+            border-radius:50%;
+            border:1px solid #315529;
+        }
+
+        .mic-core{
+            width:64px;
+            height:64px;
+            border-radius:50%;
+            border:1px solid #4f9e43;
+            background:#132114;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:28px;
+            z-index:2;
+            box-shadow:0 0 15px rgba(111,255,122,.28);
+        }
+
+        .ready{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            color:var(--red);
+            font-size:13px;
+            text-transform:uppercase;
+            letter-spacing:.18em;
+        }
+
+        .status-recording{
+            color:#ff9d86 !important;
+        }
+
+        .status-processing{
+            color:#ffd36a !important;
+        }
+
+        .status-ready{
+            color:var(--red);
+        }
+
+        .status-ok{
+            color:#79ff63 !important;
+        }
+
+        .dot{
+            width:10px;
+            height:10px;
+            border-radius:50%;
+            background:#ff4331;
+            box-shadow:0 0 10px rgba(255,67,49,.85);
+        }
+
+        .score-block{margin-bottom:14px}
+        .score-head{
+            display:flex;
+            justify-content:space-between;
+            gap:10px;
+            font-size:13px;
+            margin-bottom:8px;
+        }
+
+        .score-value-green{
+            color:var(--green);
+            font-weight:700;
+            font-size:22px;
+        }
+
+        .score-value-red{
+            color:var(--red);
+            font-weight:700;
+            font-size:22px;
+        }
+
+        .score-track{
+            height:12px;
+            border-radius:999px;
+            background:#151b13;
+            border:1px solid #273220;
+            overflow:hidden;
+        }
+
+        .score-fill-green{
+            height:100%;
+            background:linear-gradient(90deg,#87ff6e,#4be25d);
+            box-shadow:0 0 14px rgba(100,255,100,.24);
+        }
+
+        .score-fill-red{
+            height:100%;
+            background:linear-gradient(90deg,#ff6b57,#ff3d2f);
+            box-shadow:0 0 14px rgba(255,90,70,.24);
+        }
+
+        .alert-row{
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+
+        .alert-box-normal{
+            margin-top:16px;
+            border:1px solid #2f7d48;
+            border-radius:18px;
+            background:linear-gradient(180deg,#112516,#0f1d12);
+            padding:14px;
+            box-shadow:0 0 18px rgba(80,255,120,.12);
+        }
+
+        .alert-box-danger{
+            margin-top:16px;
+            border:1px solid #6d2c22;
+            border-radius:18px;
+            background:linear-gradient(180deg,#381612,#24100f);
+            padding:14px;
+            box-shadow:0 0 18px rgba(255,91,71,.18);
+        }
+
+        .alert-icon-normal{
+            width:42px;
+            height:42px;
+            border-radius:12px;
+            background:#16321d;
+            border:1px solid #2f7d48;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:22px;
+            color:#79ff63;
+        }
+
+        .alert-icon-danger{
+            width:42px;
+            height:42px;
+            border-radius:12px;
+            background:#561d18;
+            border:1px solid #884036;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:22px;
+            color:#ff9d86;
+        }
+
+        .alert-sub-normal{
+            color:#8dff69;
+            font-size:11px;
+            text-transform:uppercase;
+            letter-spacing:.18em;
+        }
+
+        .alert-sub-danger{
+            color:#ff9d86;
+            font-size:11px;
+            text-transform:uppercase;
+            letter-spacing:.18em;
+        }
+
+        .alert-main-normal{
+            color:#79ff63;
+            font-size:28px;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:.12em;
+            margin-top:4px;
+        }
+
+        .alert-main-danger{
+            color:#ff6b58;
+            font-size:28px;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:.12em;
+            margin-top:4px;
+        }
+
+        .material-row{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            padding:12px 14px;
+            border:1px solid var(--line);
+            border-radius:12px;
+            background:#0a0d09;
+            font-size:13px;
+            margin-bottom:10px;
+        }
+
+        .led-on{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            color:var(--red);
+            font-weight:700;
+            text-transform:uppercase;
+        }
+
+        .led-off{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            color:#79ff63;
+            font-weight:700;
+            text-transform:uppercase;
+        }
+
+        .counter{
+            border:1px solid #2f3c24;
+            background:#11170f;
+            border-radius:8px;
+            padding:4px 8px;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            overflow:hidden;
+            background:#090d08;
+        }
+
+        .table-wrap{
+            border:1px solid #273220;
+            border-radius:14px;
+            overflow:auto;
+        }
+
+        th{
+            background:#101610;
+            color:#d8eca0;
+            text-transform:uppercase;
+            letter-spacing:.14em;
+            font-size:10px;
+            text-align:left;
+            padding:10px 12px;
+            border-bottom:1px solid #1f2919;
+            white-space:nowrap;
+        }
+
+        td{
+            padding:10px 12px;
+            font-size:12px;
+            border-bottom:1px solid #151d12;
+        }
+
+        tr:nth-child(even){background:#0d130c}
+        tr:nth-child(odd){background:#0b100a}
+
+        .label-urgent{
+            color:#ff6c59;
+            border:1px solid #7d2a22;
+            background:#3a1411;
+            padding:4px 8px;
+            border-radius:999px;
+            font-size:10px;
+            font-weight:700;
+            text-transform:uppercase;
+        }
+
+        .label-normal{
+            color:#6ff785;
+            border:1px solid #2f7d48;
+            background:#13311d;
+            padding:4px 8px;
+            border-radius:999px;
+            font-size:10px;
+            font-weight:700;
+            text-transform:uppercase;
+        }
+
+        .chart-box{
+            border:1px solid #25301f;
+            background:#0a0d09;
+            border-radius:14px;
+            padding:10px;
+        }
+
+        .legend{
+            display:flex;
+            justify-content:flex-end;
+            gap:18px;
+            margin-bottom:8px;
+            font-size:10px;
+            text-transform:uppercase;
+            letter-spacing:.14em;
+        }
+
+        .legend span{
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+        }
+
+        .legend-dot-green,
+        .legend-dot-red{
+            width:10px;
+            height:10px;
+            border-radius:50%;
+            display:inline-block;
+        }
+
+        .legend-dot-green{background:#79ff63}
+        .legend-dot-red{background:#ff4d3d}
+
+        svg{width:100%;height:180px;display:block}
+
+        .muted{color:var(--muted)}
+
+        .panel-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke: #79ff63;
+        }
+
+        @media (max-width: 1180px){
+            .content{grid-template-columns:1fr}
+        }
+
+        @media (max-width: 900px){
+            .comm-grid{grid-template-columns:1fr}
+            .title{font-size:22px}
+        }
+
+        @media (max-width: 700px){
+            .header{flex-direction:column}
+            .system-box{width:100%}
+            body{padding:8px}
         }
     </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <h1>Dashboard - Détection d'Anomalies</h1>
+    <div class="frame">
+        <div class="header">
+            <div class="header-left">
+                <div class="logo"><i data-lucide="activity"></i></div>
+                <div>
+                    <h1 class="title">Système de surveillance des communications</h1>
+                    <div class="subtitle">Détection automatique des messages urgents (Text Mining ++ LLM)</div>
+                </div>
+            </div>
 
-    <form method="get">
-        <button type="submit" style="
-            background-color: #00ff88;
-            color: black;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-bottom: 20px;
-        ">
-            Actualiser
-        </button>
-    </form>
+            <div class="system-box">
+                <div class="system-line">
+                    <span>État système :</span>
+                    <span class="system-ok" id="current-system-status">ACTIF</span>
+                </div>
+                <div class="system-meta">
+                    <span id="current-mode">Mode : MONITORING</span>
+                    <span id="current-time">{{ current_time if current_time else '--:--:--' }}</span>
+                </div>
+            </div>
+        </div>
 
-    {% if latest_log %}
-    <div class="card">
-        <h2>Dernier résultat</h2>
-        <p><strong>Texte :</strong> {{ latest_log[2] }}</p>
+        <div class="content">
+            <div class="col">
+                <div class="panel">
+                    <div class="panel-title">
+                        <div class="panel-icon"><i data-lucide="mic"></i></div>
+                        <div>Dernière communication</div>
+                    </div>
 
-        <p class="big-label
-            {% if latest_log[6] == 'NORMAL' %}normal
-            {% elif latest_log[6] == 'URGENT' %}urgent
-            {% else %}critique
-            {% endif %}
-        ">
-            {{ latest_log[6] }}
-        </p>
+                    <div class="comm-grid">
+                        <div>
+                            <div class="record-label" id="pipeline-label">• État [{{ pipeline_state if pipeline_state else 'PRÊT' }}]</div>
 
-        <p class="score"><strong>Score final :</strong> {{ latest_log[5] }}</p>
-        <p><strong>Score TM :</strong> {{ latest_log[3] }}</p>
-        <p><strong>Score LLM :</strong> {{ latest_log[4] }}</p>
-        <p class="justification"><strong>Justification :</strong> {{ latest_log[7] }}</p>
+                            <div class="wave-box" id="wave-box">
+                                {% for h in waveform %}
+                                    <div class="bar" style="height: {{ h }}px; opacity: {{ 0.45 + (h / 70) }}"></div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="transcription-box">
+                                <div class="small-title">Transcription (Vosk)</div>
+                                <div class="transcription-text" id="transcript-text">
+                                    {% if transcript %}
+                                        “{{ transcript }}”
+                                    {% elif latest_log %}
+                                        “{{ latest_log[2] }}”
+                                    {% else %}
+                                        “Aucune transcription disponible.”
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="tags" id="keywords-box">
+                                {% if keywords and keywords|length > 0 %}
+                                    {% for kw in keywords %}
+                                        <span class="tag">{{ kw }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="tag">Aucun mot clé</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="ptt-box">
+                            <div class="ptt-title">Push-to-Talk</div>
+
+                            <button id="ptt-btn" class="ptt-button" type="button">
+                                <div class="mic-ring">
+                                    <div class="mic-core"><i data-lucide="mic"></i></div>
+                                </div>
+                            </button>
+
+                            <div class="ready status-ready" id="ptt-status">
+                                <span class="dot"></span>
+                                {{ pipeline_state if pipeline_state else 'PRÊT' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">
+                        <div class="panel-icon"><i data-lucide="folder"></i></div>
+                        <div>Historique des communications</div>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Heure</th>
+                                    <th>Transcription (Aperçu)</th>
+                                    <th>Classement</th>
+                                    <th>Score</th>
+                                    <th>LED</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-body">
+                                {% for log in logs %}
+                                <tr>
+                                    <td>#{{ log[0] }}</td>
+                                    <td>{{ log[1] }}</td>
+                                    <td>{{ log[2][:48] }}{% if log[2]|length > 48 %}...{% endif %}</td>
+                                    <td>
+                                        {% if log[6] == 'URGENT' or log[6] == 'CRITIQUE' %}
+                                            <span class="label-urgent">{{ log[6] }}</span>
+                                        {% else %}
+                                            <span class="label-normal">NORMAL</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ '%.2f'|format(log[5]) }}</td>
+                                    <td>
+                                        {% if log[6] == 'URGENT' or log[6] == 'CRITIQUE' %}
+                                            <span style="color:#ff614e;">ON</span>
+                                        {% else %}
+                                            <span class="muted">OFF</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% if not logs %}
+                                <tr>
+                                    <td colspan="6" class="muted">Aucun historique disponible.</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="panel">
+                    <div class="panel-title">
+                        <div class="panel-icon"><i data-lucide="brain"></i></div>
+                        <div>Analyse du message</div>
+                    </div>
+
+                    <div class="score-block">
+                        <div class="score-head">
+                            <span>Score Text Mining (TF-IDF)</span>
+                            <span class="score-value-green" id="score-tm-value">{{ score_tm }}</span>
+                        </div>
+                        <div class="score-track">
+                            <div class="score-fill-green" id="score-tm-bar" style="width: {{ score_tm_percent }}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="score-block">
+                        <div class="score-head">
+                            <span>Score LLM (désactivé)</span>
+                            <span class="score-value-green" id="score-llm-value">{{ score_llm }}</span>
+                        </div>
+                        <div class="score-track">
+                            <div class="score-fill-green" id="score-llm-bar" style="width: {{ score_llm_percent }}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="score-block">
+                        <div class="score-head">
+                            <span>Score Fusion</span>
+                            <span id="score-final-value" class="{% if alert_label == 'NORMAL' %}score-value-green{% else %}score-value-red{% endif %}">
+                                {{ score_final }}
+                            </span>
+                        </div>
+                        <div class="score-track">
+                            <div id="score-final-bar" class="{% if alert_label == 'NORMAL' %}score-fill-green{% else %}score-fill-red{% endif %}" style="width: {{ score_final_percent }}%"></div>
+                        </div>
+                    </div>
+
+                    <div id="alert-box" class="{% if alert_label == 'NORMAL' %}alert-box-normal{% else %}alert-box-danger{% endif %}">
+                        <div class="alert-row">
+                            <div id="alert-icon" class="{% if alert_label == 'NORMAL' %}alert-icon-normal{% else %}alert-icon-danger{% endif %}">⚠</div>
+                            <div>
+                                <div id="alert-sub" class="{% if alert_label == 'NORMAL' %}alert-sub-normal{% else %}alert-sub-danger{% endif %}">
+                                    Niveau d’alerte
+                                </div>
+                                <div id="alert-main" class="{% if alert_label == 'NORMAL' %}alert-main-normal{% else %}alert-main-danger{% endif %}">
+                                    {{ alert_label }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">
+                        <div class="panel-icon"><i data-lucide="lightbulb"></i></div>
+                        <div>État matériel (GPIO - Raspberry Pi)</div>
+                    </div>
+
+                    <div class="material-row">
+                        <span>LED statut :</span>
+                        <span id="led-status-text" class="{% if led_status == 'ON' %}led-on{% else %}led-off{% endif %}">
+                            <span class="dot"></span>
+                            {% if led_status == 'ON' %}
+                                ALLUMÉE (ON)
+                            {% else %}
+                                ÉTEINTE (OFF)
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="material-row">
+                        <span>Alerte envoyée au système</span>
+                        <span class="counter" id="urgent-count">{{ urgent_count }}</span>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">
+                        <div class="panel-icon"><i data-lucide="line-chart"></i></div>
+                        <div>Statistiques en temps réel</div>
+                    </div>
+
+                    <div class="chart-box">
+                        <div class="legend">
+                            <span><i class="legend-dot-green"></i> Normaux</span>
+                            <span><i class="legend-dot-red"></i> Urgents</span>
+                        </div>
+
+                        <svg viewBox="0 0 320 160" preserveAspectRatio="none">
+                            {% for y in [20,45,70,95,120] %}
+                                <line x1="20" y1="{{ y }}" x2="300" y2="{{ y }}" stroke="#22301f" stroke-width="1"></line>
+                            {% endfor %}
+                            {% for x in [20,55,90,125,160,195,230,265] %}
+                                <line x1="{{ x }}" y1="20" x2="{{ x }}" y2="120" stroke="#172117" stroke-width="1"></line>
+                            {% endfor %}
+
+                            <polyline id="normal-line" fill="none" stroke="#79ff63" stroke-width="3" stroke-linecap="round" points="{{ normal_points }}"></polyline>
+                            <polyline id="urgent-line" fill="none" stroke="#ff4d3d" stroke-width="3" stroke-linecap="round" points="{{ urgent_points }}"></polyline>
+
+                            {% for t in chart_labels %}
+                                <text class="chart-label" x="{{ 20 + loop.index0 * 35 }}" y="145" font-size="10" fill="#a9b97a">{{ t }}</text>
+                            {% endfor %}
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    {% endif %}
 
-    <!-- <div class="card">
-        <h2>Évolution des scores</h2>
-        <canvas id="scoreChart"></canvas>
-    </div> -->
+    <script>
+        lucide.createIcons();
+        const waveBox = document.getElementById("wave-box");
+        const pttBtn = document.getElementById("ptt-btn");
+        const pttStatus = document.getElementById("ptt-status");
+        const pipelineLabel = document.getElementById("pipeline-label");
+        const transcriptText = document.getElementById("transcript-text");
+        const keywordsBox = document.getElementById("keywords-box");
+        const scoreTmValue = document.getElementById("score-tm-value");
+        const scoreLlmValue = document.getElementById("score-llm-value");
+        const scoreFinalValue = document.getElementById("score-final-value");
+        const scoreTmBar = document.getElementById("score-tm-bar");
+        const scoreLlmBar = document.getElementById("score-llm-bar");
+        const scoreFinalBar = document.getElementById("score-final-bar");
+        const alertBox = document.getElementById("alert-box");
+        const alertIcon = document.getElementById("alert-icon");
+        const alertSub = document.getElementById("alert-sub");
+        const alertMain = document.getElementById("alert-main");
+        const ledStatusText = document.getElementById("led-status-text");
+        const urgentCount = document.getElementById("urgent-count");
+        const historyBody = document.getElementById("history-body");
+        const currentTime = document.getElementById("current-time");
+        const currentSystemStatus = document.getElementById("current-system-status");
+        const currentMode = document.getElementById("current-mode");
+        const normalLine = document.getElementById("normal-line");
+        const urgentLine = document.getElementById("urgent-line");
 
-    <div class="card">
-        <h2>Historique des dernières analyses</h2>
+        function setPttStatus(text) {
+            let cls = "status-ready";
+            if (text === "ENREGISTREMENT") cls = "status-recording";
+            else if (text === "TRANSCRIPTION" || text === "ANALYSE") cls = "status-processing";
+            else if (text === "NORMAL" || text === "URGENT" || text === "CRITIQUE" || text === "PRÊT") cls = "status-ok";
 
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Date</th>
-                    <th>Transcript</th>
-                    <th>Score TM</th>
-                    <th>Score LLM</th>
-                    <th>Score Final</th>
-                    <th>Label</th>
-                    <th>Justification</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for log in logs %}
-                <tr>
-                    <td>{{ log[0] }}</td>
-                    <td>{{ log[1] }}</td>
-                    <td>{{ log[2] }}</td>
-                    <td>{{ log[3] }}</td>
-                    <td>{{ log[4] }}</td>
-                    <td>{{ log[5] }}</td>
-                    <td class="
-                        {% if log[6] == 'NORMAL' %}normal
-                        {% elif log[6] == 'URGENT' %}urgent
-                        {% else %}critique
-                        {% endif %}
-                    ">
-                        {{ log[6] }}
-                    </td>
-                    <td>{{ log[7] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
-    <!-- <script>
-        const ctx = document.getElementById('scoreChart');
-    
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: {{ labels | safe }},
-                datasets: [{
-                    label: 'Score Final',
-                    data: {{ scores | safe }},
-                    borderWidth: 2,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100
-                    }
-                }
+            pttStatus.className = "ready " + cls;
+            pttStatus.innerHTML = `<span class="dot"></span>${text}`;
+            if (pipelineLabel) {
+                pipelineLabel.textContent = `• État [${text}]`;
             }
-        });
-    </script> -->
+        }
+
+        function renderWaveform(bars) {
+            if (!waveBox || !bars) return;
+            waveBox.innerHTML = "";
+            bars.forEach(h => {
+                const bar = document.createElement("div");
+                bar.className = "bar";
+                bar.style.height = `${h}px`;
+                bar.style.opacity = Math.max(0.45, Math.min(1, 0.45 + h / 100));
+                waveBox.appendChild(bar);
+            });
+        }
+
+        function renderKeywords(keywords) {
+            if (!keywordsBox) return;
+            keywordsBox.innerHTML = "";
+
+            if (keywords && keywords.length > 0) {
+                keywords.slice(0, 3).forEach(kw => {
+                    const span = document.createElement("span");
+                    span.className = "tag";
+                    span.textContent = kw;
+                    keywordsBox.appendChild(span);
+                });
+            } else {
+                const span = document.createElement("span");
+                span.className = "tag";
+                span.textContent = "Aucun mot clé";
+                keywordsBox.appendChild(span);
+            }
+        }
+
+        function renderAlert(label) {
+            const normal = label === "NORMAL";
+
+            if (alertBox) alertBox.className = normal ? "alert-box-normal" : "alert-box-danger";
+            if (alertIcon) alertIcon.className = normal ? "alert-icon-normal" : "alert-icon-danger";
+            if (alertSub) alertSub.className = normal ? "alert-sub-normal" : "alert-sub-danger";
+            if (alertMain) {
+                alertMain.className = normal ? "alert-main-normal" : "alert-main-danger";
+                alertMain.textContent = label;
+            }
+
+            if (scoreFinalValue) scoreFinalValue.className = normal ? "score-value-green" : "score-value-red";
+            if (scoreFinalBar) scoreFinalBar.className = normal ? "score-fill-green" : "score-fill-red";
+        }
+
+        function renderLed(status) {
+            if (!ledStatusText) return;
+
+            if (status === "ON") {
+                ledStatusText.className = "led-on";
+                ledStatusText.innerHTML = '<span class="dot"></span>ALLUMÉE (ON)';
+            } else {
+                ledStatusText.className = "led-off";
+                ledStatusText.innerHTML = '<span class="dot"></span>ÉTEINTE (OFF)';
+            }
+        }
+
+        function renderHistory(logs) {
+            if (!historyBody) return;
+            historyBody.innerHTML = "";
+
+            (logs || []).forEach(log => {
+                const tr = document.createElement("tr");
+                const label = (log[6] || "NORMAL");
+                const isDanger = label === "URGENT" || label === "CRITIQUE";
+                const preview = (log[2] || "").length > 48 ? (log[2] || "").slice(0, 48) + "..." : (log[2] || "");
+
+                tr.innerHTML = `
+                    <td>#${log[0]}</td>
+                    <td>${log[1] || ""}</td>
+                    <td>${preview}</td>
+                    <td>${isDanger ? `<span class="label-urgent">${label}</span>` : `<span class="label-normal">NORMAL</span>`}</td>
+                    <td>${Number(log[5] || 0).toFixed(2)}</td>
+                    <td>${isDanger ? `<span style="color:#ff614e;">ON</span>` : `<span class="muted">OFF</span>`}</td>
+                `;
+                historyBody.appendChild(tr);
+            });
+        }
+
+        function renderChart(labels, normalPoints, urgentPoints) {
+            if (normalLine) normalLine.setAttribute("points", normalPoints || "");
+            if (urgentLine) urgentLine.setAttribute("points", urgentPoints || "");
+
+            document.querySelectorAll(".chart-label").forEach((el, index) => {
+                el.textContent = (labels && labels[index]) ? labels[index] : "--:--";
+            });
+        }
+
+        async function triggerPushToTalk() {
+            try {
+                pttBtn.disabled = true;
+                await fetch("/push-to-talk", { method: "POST" });
+            } catch (e) {
+                alert("Erreur lors du lancement du Push-to-Talk");
+            } finally {
+                setTimeout(() => {
+                    pttBtn.disabled = false;
+                }, 1200);
+            }
+        }
+
+        if (pttBtn) {
+            pttBtn.addEventListener("click", triggerPushToTalk);
+        }
+
+        const evtSource = new EventSource("/events");
+
+        evtSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+
+            if (currentTime) currentTime.textContent = data.current_time || "--:--:--";
+            if (currentSystemStatus) currentSystemStatus.textContent = data.system_status || "ACTIF";
+            if (currentMode) currentMode.textContent = `Mode : ${data.mode || "MONITORING"}`;
+
+            const state = data.pipeline_state || "PRÊT";
+
+            if (state === "ENREGISTREMENT") {
+                setPttStatus(state);
+                pttStatus.className = "ready status-recording";
+            } else if (state === "TRANSCRIPTION" || state === "ANALYSE") {
+                setPttStatus(state);
+                pttStatus.className = "ready status-processing";
+            } else if (state === "NORMAL" || state === "URGENT" || state === "CRITIQUE" || state === "PRÊT") {
+                setPttStatus(state);
+                pttStatus.className = "ready status-ok";
+            } else {
+                setPttStatus(state);
+                pttStatus.className = "ready status-ready";
+            }
+
+            renderWaveform(data.waveform || []);
+
+            if (transcriptText) {
+                transcriptText.textContent = data.transcript ? `“${data.transcript}”` : "“Aucune transcription disponible.”";
+            }
+
+            renderKeywords(data.keywords || []);
+
+            if (scoreTmValue) scoreTmValue.textContent = Number(data.score_tm || 0).toFixed(2);
+            if (scoreLlmValue) scoreLlmValue.textContent = Number(data.score_llm || 0).toFixed(2);
+            if (scoreFinalValue) scoreFinalValue.textContent = Number(data.score_final || 0).toFixed(2);
+
+            if (scoreTmBar) scoreTmBar.style.width = `${data.score_tm_percent || 0}%`;
+            if (scoreLlmBar) scoreLlmBar.style.width = `${data.score_llm_percent || 0}%`;
+            if (scoreFinalBar) scoreFinalBar.style.width = `${data.score_final_percent || 0}%`;
+
+            renderAlert(data.alert_label || "NORMAL");
+            renderLed(data.led_status || "OFF");
+
+            if (urgentCount) urgentCount.textContent = data.urgent_count || 0;
+
+            renderHistory(data.logs || []);
+            renderChart(data.chart_labels || [], data.normal_points || "", data.urgent_points || "");
+        };
+
+        evtSource.onerror = function() {
+            console.log("Flux temps réel indisponible.");
+        };
+    </script>
 </body>
 </html>

@@ -2,8 +2,8 @@ from audio.recorder import record_audio
 from stt.vosk_transcriber import VoskTranscriber
 from text_processing.preprocessor import TextPreprocessor
 from text_mining.engine import TextMiningEngine
-from decision.engine import DecisionEngine
-from llm.classifier import LLMClassifier
+# from decision.engine import DecisionEngine
+# from llm.classifier import LLMClassifier
 from database.repository import SQLiteRepository
 from arduino.serial_client import ArduinoClient
 
@@ -27,26 +27,47 @@ if __name__ == "__main__":
     tm_result = tm_engine.score(clean_text)
     print("Résultat Text Mining :", tm_result)
 
-    llm_classifier = LLMClassifier()
-    llm_result = llm_classifier.classify(clean_text)
-    print("Résultat LLM :", llm_result)
+    if tm_result["score_tm"] < 40:
+        final_decision = {
+            "label_final": "NORMAL",
+            "score_final": tm_result["score_tm"],
+            "reason_final": "Décision basée uniquement sur le Text Mining",
+        }
+    elif tm_result["score_tm"] < 70:
+        final_decision = {
+            "label_final": "URGENT",
+            "score_final": tm_result["score_tm"],
+            "reason_final": "Décision basée uniquement sur le Text Mining",
+        }
+    else:
+        final_decision = {
+            "label_final": "CRITIQUE",
+            "score_final": tm_result["score_tm"],
+            "reason_final": "Décision basée uniquement sur le Text Mining",
+        }
 
-    decision_engine = DecisionEngine()
-    final_decision = decision_engine.fuse_tm_llm(tm_result, llm_result)
     print("Décision finale :", final_decision)
 
-    arduino = ArduinoClient(port="COM3")  # adapter mn b3d
-    arduino.send_state(final_decision["label_final"])
-    print("Signal envoyé à Arduino")
+    # llm_classifier = LLMClassifier()
+    # llm_result = llm_classifier.classify(clean_text)
+    # print("Résultat LLM :", llm_result)
 
-    db = SQLiteRepository()
-    db.insert_log(
-        transcript=clean_text,
-        score_tm=tm_result["score_tm"],
-        score_llm=llm_result["score_llm"],
-        score_final=final_decision["score_final"],
-        label_final=final_decision["label_final"],
-        justification=final_decision["reason_final"]
-    )
+    # decision_engine = DecisionEngine()
+    # final_decision = decision_engine.fuse_tm_llm(tm_result, llm_result)
+    # print("Décision finale :", final_decision)
 
-    print("Log enregistré dans SQLite.")
+    # arduino = ArduinoClient(port="COM3")  # adapter mn b3d
+    # arduino.send_state(final_decision["label_final"])
+    # print("Signal envoyé à Arduino")
+
+    # db = SQLiteRepository()
+    # db.insert_log(
+    #     transcript=clean_text,
+    #     score_tm=tm_result["score_tm"],
+    #     score_llm=llm_result["score_llm"],
+    #     score_final=final_decision["score_final"],
+    #     label_final=final_decision["label_final"],
+    #     justification=final_decision["reason_final"]
+    # )
+
+    # print("Log enregistré dans SQLite.")

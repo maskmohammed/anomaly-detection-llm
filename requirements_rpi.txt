@@ -1,0 +1,7 @@
+Flask
+vosk
+numpy
+scikit-learn
+sounddevice
+gpiozero
+spacy
