@@ -1,15 +1,11 @@
-# Environnement virtuel
 venv/
 
-# Fichiers audio temporaires
-data/
+data/anomaly_logs.db
+data/test.wav
 
-# Modèles lourds
 models/
 
-# Fichiers Python compilés
 __pycache__/
 *.pyc
 
-# Fichiers système Windows
 Thumbs.db
