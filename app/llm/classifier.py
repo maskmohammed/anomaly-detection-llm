@@ -9,40 +9,18 @@ class LLMClassifier:
 
     def build_prompt(self, text: str) -> str:
         return f"""
-    You are a strict security classifier.
+        You are a strict classifier.
 
-    Classify the following message into exactly one label:
-    NORMAL, URGENT, or CRITIQUE.
+        Answer ONLY with JSON.
 
-    Rules:
-    - NORMAL: greeting, neutral, no threat
-    - URGENT: problem, anomaly, unusual situation
-    - CRITIQUE: attack, intrusion, sabotage, immediate danger
+        Do NOT write anything else.
 
-    Score rules:
-    - NORMAL → 0–39
-    - URGENT → 40–69
-    - CRITIQUE → 70–100
+        Format:
+        {{"label":"NORMAL|URGENT|CRITIQUE","score_llm":number}}
 
-    Return ONLY valid JSON. No explanation outside JSON.
-
-    Format:
-    {{"label":"NORMAL|URGENT|CRITIQUE","score_llm":number,"justification":"short sentence"}}
-
-    Examples:
-
-    Input: bonjour je mappelle mohamed
-    Output: {{"label":"NORMAL","score_llm":15,"justification":"Neutral greeting message."}}
-
-    Input: urgence dans le secteur
-    Output: {{"label":"URGENT","score_llm":55,"justification":"Indicates an urgent situation."}}
-
-    Input: attaque dans la zone
-    Output: {{"label":"CRITIQUE","score_llm":90,"justification":"Contains a severe threat keyword."}}
-
-    Now classify:
-    {text}
-    """.strip()
+        Message:
+        {text}
+        """.strip()
 
     def _normalize_score(self, label: str, score: int) -> int:
         if label == "NORMAL":
@@ -68,7 +46,9 @@ class LLMClassifier:
             "stream": False,
             "format": "json",
             "options": {
-                "temperature": 0
+                "temperature": 0,
+                "num_predict": 50,
+                "stop": ["\n", "}"]
             }
         }
 
