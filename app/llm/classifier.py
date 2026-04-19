@@ -10,36 +10,36 @@ class LLMClassifier:
 
     def build_prompt(self, text: str) -> str:
         return f"""
-        You are a strict security classifier.
+    Tu es un classificateur de sécurité strict.
 
-        Task:
-        Classify the message into exactly one label:
-        NORMAL, URGENT, or CRITIQUE.
+    Ta tâche :
+    Classifie le message dans une seule catégorie :
+    NORMAL, URGENT, ou CRITIQUE.
 
-        Definitions:
-        - NORMAL: greeting, neutral, routine communication, no threat
-        - URGENT: anomaly, problem, unusual situation, request for immediate help
-        - CRITIQUE: attack, intrusion, sabotage, explosion, bomb, immediate danger
+    Définitions :
+    - NORMAL : salutation, message neutre, routine, aucune menace
+    - URGENT : anomalie, problème, situation inhabituelle, besoin d'aide rapide
+    - CRITIQUE : attaque, intrusion, sabotage, explosion, bombe, danger immédiat
 
-        Score rules:
-        - NORMAL -> 0 to 39
-        - URGENT -> 40 to 69
-        - CRITIQUE -> 70 to 100
+    Règles de score :
+    - NORMAL -> 0 à 39
+    - URGENT -> 40 à 69
+    - CRITIQUE -> 70 à 100
 
-        IMPORTANT:
-        - Return ONLY valid JSON
-        - Do not add explanations outside JSON
-        - Use exactly this format
+    IMPORTANT :
+    - Réponds uniquement en JSON valide
+    - N'ajoute aucun texte avant ou après
+    - Utilise exactement ce format
 
-        {{
-        "label": "NORMAL",
-        "score_llm": 15,
-        "justification": "short sentence"
-        }}
+    {{
+    "label": "NORMAL",
+    "score_llm": 15,
+    "justification": "courte phrase"
+    }}
 
-        Message:
-        {text}
-        """.strip()
+    Message :
+    {text}
+    """.strip()
 
     def _normalize_score(self, label: str, score: int) -> int:
         if label == "NORMAL":
@@ -87,6 +87,14 @@ class LLMClassifier:
             "blessé", "blesse", "danger", "sos"
         ]
 
+        normal_keywords = [
+            "bonjour", "salut", "ca va", "ça va", "merci",
+            "bien recu", "bien reçu", "test", "ok"
+        ]
+
+        if any(word in combined for word in normal_keywords):
+            return "NORMAL"
+        
         if any(word in combined for word in critical_keywords):
             return "CRITIQUE"
 
