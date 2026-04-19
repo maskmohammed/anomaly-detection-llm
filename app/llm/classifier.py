@@ -4,7 +4,7 @@ import requests
 
 
 class LLMClassifier:
-    def __init__(self, model_name="qwen2.5:0.5b-instruct", base_url="http://localhost:11434/api/generate"):
+    def __init__(self, model_name="tinyllama", base_url="http://localhost:11434/api/generate"):
         self.model_name = model_name
         self.base_url = base_url
 
