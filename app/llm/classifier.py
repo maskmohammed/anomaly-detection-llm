@@ -87,13 +87,13 @@ class LLMClassifier:
             "blessé", "blesse", "danger", "sos"
         ]
 
-        normal_keywords = [
-            "bonjour", "salut", "ca va", "ça va", "merci",
-            "bien recu", "bien reçu", "test", "ok"
-        ]
+        # normal_keywords = [
+        #     "bonjour", "salut", "ca va", "ça va", "merci",
+        #     "bien recu", "bien reçu", "test", "ok"
+        # ]
 
-        if any(word in combined for word in normal_keywords):
-            return "NORMAL"
+        # if any(word in combined for word in normal_keywords):
+        #     return "NORMAL"
         
         if any(word in combined for word in critical_keywords):
             return "CRITIQUE"
