@@ -167,6 +167,127 @@ def start_audio_monitor():
     threading.Thread(target=worker, daemon=True).start()
 
 
+# def run_pipeline_job(source="WEB"):
+#     global pipeline_busy
+
+#     with pipeline_lock:
+#         if pipeline_busy:
+#             return {"ok": False, "message": "Pipeline occupé"}
+#         pipeline_busy = True
+
+#     try:
+#         from app.audio.recorder import record_audio
+#         from app.stt.vosk_transcriber import VoskTranscriber
+#         from app.text_processing.preprocessor import TextPreprocessor
+#         from app.text_mining.engine import TextMiningEngine
+#         from app.llm.classifier import LLMClassifier
+#         from app.decision.engine import DecisionEngine
+#         from app.database.repository import SQLiteRepository
+
+#         current_mode = live_state.get().get("mode", "MONITORING")
+
+#         live_state.update(
+#             system_status="ACTIF",
+#             mode=current_mode,
+#             pipeline_state="ENREGISTREMENT",
+#             transcript="",
+#             keywords=[],
+#         )
+
+#         record_audio("data/test.wav")
+
+#         live_state.update(pipeline_state="TRANSCRIPTION")
+
+#         transcriber = VoskTranscriber()
+#         raw_text = transcriber.transcribe("data/test.wav")
+
+#         preprocessor = TextPreprocessor()
+#         clean_text = preprocessor.clean(raw_text)
+
+#         live_state.update(
+#             pipeline_state="ANALYSE",
+#             transcript=clean_text or "",
+#         )
+
+#         if not clean_text.strip():
+#             live_state.update(
+#                 pipeline_state="PRÊT",
+#                 transcript="",
+#                 keywords=[],
+#                 score_tm=0.0,
+#                 score_llm=0.0,
+#                 score_final=0.0,
+#                 score_tm_percent=0.0,
+#                 score_llm_percent=0.0,
+#                 score_final_percent=0.0,
+#                 alert_label="NORMAL",
+#                 led_status="OFF",
+#             )
+#             refresh_from_db()
+#             return {"ok": True, "label": "NORMAL", "score": 0.0, "message": "Texte vide"}
+
+#         tm_engine = TextMiningEngine()
+#         tm_result = tm_engine.score(clean_text)
+
+#         llm_classifier = LLMClassifier()
+#         llm_result = llm_classifier.classify(clean_text)
+
+#         decision_engine = DecisionEngine()
+#         final_decision = decision_engine.fuse_tm_llm(tm_result, llm_result)
+
+#         score_tm = float(tm_result.get("score_tm", 0))
+#         score_llm = float(llm_result.get("score_llm", 0))
+#         score_final = float(final_decision.get("score_final", 0))
+#         label = final_decision.get("label_final", "NORMAL")
+#         reason = final_decision.get("reason_final", f"Déclenché depuis {source}")
+
+#         db = SQLiteRepository()
+#         db.insert_log(
+#             transcript=clean_text,
+#             score_tm=score_tm,
+#             score_llm=score_llm,
+#             score_final=score_final,
+#             label_final=label,
+#             justification=reason
+#         )
+
+#         live_state.update(
+#             pipeline_state=label,
+#             transcript=clean_text,
+#             keywords=tm_result.get("keywords", [])[:3],
+#             score_tm=round(score_tm, 2),
+#             score_llm=round(score_llm, 2),
+#             score_final=round(score_final, 2),
+#             score_tm_percent=clamp_percent(score_tm),
+#             score_llm_percent=clamp_percent(score_llm),
+#             score_final_percent=clamp_percent(score_final),
+#             alert_label=label,
+#             led_status="ON" if label in ["URGENT", "CRITIQUE"] else "OFF",
+#         )
+
+#         refresh_from_db()
+#         time.sleep(1.2)
+#         live_state.update(pipeline_state="PRÊT")
+
+#         return {
+#             "ok": True,
+#             "label": label,
+#             "score": round(score_final, 2),
+#             "message": "Traitement terminé"
+#         }
+
+#     except Exception as e:
+#         live_state.update(
+#             pipeline_state="ERREUR",
+#             system_status="ACTIF"
+#         )
+#         print("Erreur pipeline realtime :", e)
+#         return {"ok": False, "message": str(e)}
+
+#     finally:
+#         with pipeline_lock:
+#             pipeline_busy = False
+
 def run_pipeline_job(source="WEB"):
     global pipeline_busy
 
@@ -180,8 +301,8 @@ def run_pipeline_job(source="WEB"):
         from app.stt.vosk_transcriber import VoskTranscriber
         from app.text_processing.preprocessor import TextPreprocessor
         from app.text_mining.engine import TextMiningEngine
-        from app.llm.classifier import LLMClassifier
-        from app.decision.engine import DecisionEngine
+        # from app.llm.classifier import LLMClassifier
+        # from app.decision.engine import DecisionEngine
         from app.database.repository import SQLiteRepository
 
         current_mode = live_state.get().get("mode", "MONITORING")
@@ -229,17 +350,18 @@ def run_pipeline_job(source="WEB"):
         tm_engine = TextMiningEngine()
         tm_result = tm_engine.score(clean_text)
 
-        llm_classifier = LLMClassifier()
-        llm_result = llm_classifier.classify(clean_text)
-
-        decision_engine = DecisionEngine()
-        final_decision = decision_engine.fuse_tm_llm(tm_result, llm_result)
-
         score_tm = float(tm_result.get("score_tm", 0))
-        score_llm = float(llm_result.get("score_llm", 0))
-        score_final = float(final_decision.get("score_final", 0))
-        label = final_decision.get("label_final", "NORMAL")
-        reason = final_decision.get("reason_final", f"Déclenché depuis {source}")
+        score_llm = 0.0
+
+        if score_tm < 50:
+            label = "NORMAL"
+        elif score_tm < 72:
+            label = "URGENT"
+        else:
+            label = "CRITIQUE"
+
+        score_final = score_tm
+        reason = f"Text Mining only depuis {source}"
 
         db = SQLiteRepository()
         db.insert_log(
