@@ -59,15 +59,15 @@ class LLMClassifier:
             
 
             raw_output = data.get("response", "").strip()
-            try:
-                parsed = json.loads(raw_output)
-            except:
-                return {
-                    "label": "NORMAL",
-                    "score_llm": 0,
-                    "justification": "Réponse LLM invalide",
-                    "raw_output": raw_output
-                }
+            # try:
+            parsed = json.loads(raw_output)
+            # except:
+            #     return {
+            #         "label": "NORMAL",
+            #         "score_llm": 0,
+            #         "justification": "Réponse LLM invalide",
+            #         "raw_output": raw_output
+            #     }
 
             label = str(parsed.get("label", "NORMAL")).upper().strip()
             if label not in {"NORMAL", "URGENT", "CRITIQUE"}:
