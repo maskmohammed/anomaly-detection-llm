@@ -13,7 +13,7 @@ class LLMClassifier:
 You are a strict security classifier.
 
 Return ONLY valid JSON.
-Do not write anything before or after JSON.
+No explanation outside JSON.
 
 Format:
 {{"label":"NORMAL|URGENT|CRITIQUE","score_llm":number,"justification":"short sentence"}}
@@ -34,6 +34,13 @@ Message:
             return max(40, min(score, 69))
         return max(70, min(score, 100))
 
+    def _default_score_from_label(self, label: str) -> int:
+        if label == "NORMAL":
+            return 15
+        if label == "URGENT":
+            return 55
+        return 85
+
     def _extract_json(self, raw_output: str):
         raw_output = raw_output.strip()
 
@@ -50,6 +57,15 @@ Message:
                 pass
 
         return None
+
+    def _extract_label_from_text(self, raw_output: str) -> str:
+        upper = raw_output.upper()
+
+        if "CRITIQUE" in upper:
+            return "CRITIQUE"
+        if "URGENT" in upper:
+            return "URGENT"
+        return "NORMAL"
 
     def classify(self, text: str):
         if not text or not text.strip():
@@ -82,31 +98,40 @@ Message:
             print("LLM RAW:", raw_output)
 
             parsed = self._extract_json(raw_output)
-            if not parsed:
+
+            if parsed:
+                label = str(parsed.get("label", "NORMAL")).upper().strip()
+                if label not in {"NORMAL", "URGENT", "CRITIQUE"}:
+                    label = "NORMAL"
+
+                raw_score = parsed.get("score_llm", None)
+                try:
+                    if raw_score is None or str(raw_score).strip() == "":
+                        score = self._default_score_from_label(label)
+                    else:
+                        score = int(float(raw_score))
+                except Exception:
+                    score = self._default_score_from_label(label)
+
+                score = self._normalize_score(label, score)
+
+                justification = str(parsed.get("justification", "Aucune justification")).strip()
+
                 return {
-                    "label": "NORMAL",
-                    "score_llm": 0,
-                    "justification": "Réponse LLM invalide",
+                    "label": label,
+                    "score_llm": score,
+                    "justification": justification,
                     "raw_output": raw_output
                 }
 
-            label = str(parsed.get("label", "NORMAL")).upper().strip()
-            if label not in {"NORMAL", "URGENT", "CRITIQUE"}:
-                label = "NORMAL"
-
-            try:
-                score = int(float(parsed.get("score_llm", 0)))
-            except Exception:
-                score = 0
-
-            score = self._normalize_score(label, score)
-
-            justification = str(parsed.get("justification", "Aucune justification")).strip()
+            # Fallback si tinyllama répond hors JSON
+            label = self._extract_label_from_text(raw_output)
+            score = self._default_score_from_label(label)
 
             return {
                 "label": label,
                 "score_llm": score,
-                "justification": justification,
+                "justification": "Réponse non JSON, score déduit du label",
                 "raw_output": raw_output
             }
 
