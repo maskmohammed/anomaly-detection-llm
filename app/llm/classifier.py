@@ -93,7 +93,10 @@ class LLMClassifier:
             if label not in {"NORMAL", "URGENT", "CRITIQUE"}:
                 label = "NORMAL"
 
-            score = int(parsed.get("score_llm", 0))
+            try:
+                score = int(parsed.get("score_llm", 0))
+            except:
+                score = 0
             score = self._normalize_score(label, score)
 
             justification = str(parsed.get("justification", "Aucune justification")).strip()
